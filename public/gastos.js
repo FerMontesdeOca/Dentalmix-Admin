@@ -60,7 +60,7 @@ async function cargarConfig() {
 
   sucursalesTodas = sucursales;
   tomoxSucursales = tomoxDeConfig;
-  selectTipoGasto.innerHTML = tiposGasto.map((t) => `<option value="${t}">${t}</option>`).join('');
+  document.getElementById('tipos-gasto-usados').innerHTML = tiposGasto.map((t) => `<option value="${escapeHtml(t)}"></option>`).join('');
   actualizarUIporMarca();
 }
 
@@ -71,10 +71,9 @@ function sucursalesParaMarca() {
   return sucursalesTodas;
 }
 
-// Dentalmix usa el catalogo fijo de tipos de gasto; otras marcas lo
-// escriben libremente (no comparten ese catalogo).
+// Dentalmix escribe el tipo de gasto a mano (se sugieren los ya usados).
 function tipoGastoLibre() {
-  return marcaActual() !== 'dentalmix';
+  return true;
 }
 
 function valorTipoGasto() {
@@ -360,7 +359,14 @@ form.addEventListener('submit', async (e) => {
 
   limpiarFormulario();
   cargarGastos();
+  refrescarSugerenciasTipoGasto();
 });
+
+async function refrescarSugerenciasTipoGasto() {
+  const res = await fetch('/api/config');
+  const { tiposGasto } = await res.json();
+  document.getElementById('tipos-gasto-usados').innerHTML = tiposGasto.map((t) => `<option value="${escapeHtml(t)}"></option>`).join('');
+}
 
 cancelEditBtn.addEventListener('click', limpiarFormulario);
 filtroSucursal.addEventListener('change', () => {

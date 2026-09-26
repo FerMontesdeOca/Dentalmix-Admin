@@ -34,7 +34,7 @@ async function cargarConfig() {
   const { sucursales, tiposGasto } = await res.json();
   sucursalesDisponibles = sucursales;
   selectSucursal.innerHTML = sucursales.map((s) => `<option value="${s}">${s}</option>`).join('');
-  selectTipoGasto.innerHTML = tiposGasto.map((t) => `<option value="${t}">${t}</option>`).join('');
+  document.getElementById('tipos-gasto-usados').innerHTML = tiposGasto.map((t) => `<option value="${escapeHtml(t)}"></option>`).join('');
   renderSucursalesDivision();
 }
 
@@ -219,7 +219,7 @@ function cargarEnFormulario(c) {
     if (c.sucursal) selectSucursal.value = c.sucursal;
   }
   actualizarModoDivision();
-  if (c.tipo_gasto) selectTipoGasto.value = c.tipo_gasto;
+  selectTipoGasto.value = c.tipo_gasto || '';
   document.getElementById('monto').value = c.monto;
   document.getElementById('fecha_emision').value = c.fecha_emision;
   document.getElementById('fecha_vencimiento').value = c.fecha_vencimiento;
@@ -263,7 +263,7 @@ form.addEventListener('submit', async (e) => {
     proveedor: document.getElementById('proveedor').value.trim(),
     concepto: document.getElementById('concepto').value.trim(),
     sucursal: selectSucursal.value,
-    tipo_gasto: selectTipoGasto.value,
+    tipo_gasto: selectTipoGasto.value.trim(),
     monto: document.getElementById('monto').value,
     fecha_emision: document.getElementById('fecha_emision').value,
     fecha_vencimiento: document.getElementById('fecha_vencimiento').value,
@@ -311,6 +311,7 @@ form.addEventListener('submit', async (e) => {
 
   limpiarFormulario();
   cargarCuentas();
+  cargarConfig();
 });
 
 async function probarWhatsApp(boton) {

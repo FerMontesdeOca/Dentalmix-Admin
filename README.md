@@ -5,11 +5,11 @@ App web de administracion de Dentalmix (deposito dental). Es una copia de la app
 - **Cuentas por Pagar**: proveedor, concepto, tipo de gasto, fechas de emision y vencimiento, monto, cuentas fijas mensuales. Avisa por correo y por WhatsApp cuando una factura esta por vencer.
 - **Gastos**: tipo de gasto, concepto, fecha, monto y foto del comprobante.
 - **Cierre de Mes**: ingreso mensual, gasto, utilidad y margen, tendencia, comparacion mes vs mes y alertas de gasto.
-- **Proyeccion Mensual**: promedio de ingreso, gasto y utilidad por rango de meses (la meta mensual se configura en `METAS_MENSUALES` de `src/constants.js`).
+- **Proyeccion Mensual**: promedio de ingreso, gasto y utilidad por rango de meses (con meta mensual de 240,000).
 
 Todas las secciones se pueden exportar a CSV o Excel. El diseño se adapta a celular y tablet.
 
-El catalogo de tipos de gasto esta en `TIPOS_GASTO` de `src/constants.js`.
+El tipo de gasto se escribe a mano; al escribir, la pagina sugiere los tipos que ya se han usado. La meta mensual de ingreso (240,000 = 60,000 por semana) esta en `METAS_MENSUALES` de `src/constants.js`.
 
 ## 1. Requisitos
 

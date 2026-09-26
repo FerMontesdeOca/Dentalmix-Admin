@@ -61,7 +61,8 @@
           <label>
             Tipo de gasto
             <span class="opcional">(con el que se registrara al pagarse)</span>
-            <select id="tipo_gasto" required></select>
+            <input type="text" id="tipo_gasto" list="tipos-gasto-usados" placeholder="Escribe el tipo de gasto" required />
+            <datalist id="tipos-gasto-usados"></datalist>
           </label>
           <label id="monto-wrap">
             <span id="monto-label">Monto</span>

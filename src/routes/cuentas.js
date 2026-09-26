@@ -4,7 +4,6 @@ const { revisarVencimientos, revisarAvisosWhatsApp } = require('../cron');
 const { probarWhatsApp } = require('../whatsapp');
 const { requireAdmin } = require('../auth');
 const { enviarCSV, enviarXLSX } = require('../export');
-const { TIPOS_GASTO } = require('../constants');
 const sucursalesDb = require('../sucursales');
 const { calcularDivision, nuevoGrupoId } = require('../division');
 
@@ -71,7 +70,7 @@ function validarCuenta(body) {
   }
   if (body.monto !== undefined && body.monto !== '' && Number.isNaN(Number(body.monto))) return 'El monto debe ser un numero';
   if (!body.division && !sucursalesDb.existeActiva(body.sucursal)) return 'Sucursal invalida';
-  if (!TIPOS_GASTO.includes(body.tipo_gasto)) return 'Tipo de gasto invalido';
+  if (typeof body.tipo_gasto !== 'string' || !body.tipo_gasto.trim()) return 'Tipo de gasto invalido';
   return null;
 }
 
@@ -196,7 +195,7 @@ router.put('/:id', (req, res) => {
   if (!division && (req.body.sucursal !== undefined || existente.division) && !sucursalesDb.existeActiva(sucursal)) {
     return res.status(400).json({ error: 'Sucursal invalida' });
   }
-  if (req.body.tipo_gasto !== undefined && !TIPOS_GASTO.includes(tipo_gasto)) {
+  if (req.body.tipo_gasto !== undefined && (typeof tipo_gasto !== 'string' || !tipo_gasto.trim())) {
     return res.status(400).json({ error: 'Tipo de gasto invalido' });
   }
   if (Number.isNaN(monto)) {

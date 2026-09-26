@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const multer = require('multer');
 const db = require('../db');
 const { enviarCSV, enviarXLSX } = require('../export');
-const { TIPOS_GASTO, MARCAS, TOMOX_SUCURSALES, SUCURSAL_LABORATORIO } = require('../constants');
+const { MARCAS, TOMOX_SUCURSALES, SUCURSAL_LABORATORIO } = require('../constants');
 const sucursalesDb = require('../sucursales');
 const { calcularDivision, nuevoGrupoId } = require('../division');
 
@@ -62,10 +62,8 @@ function normalizarMarcaYSucursal(body) {
   return marca;
 }
 
-// Dentalmix usa el catalogo fijo de TIPOS_GASTO; otras marcas lo escribirian
-// libremente.
-function tipoGastoValidoParaMarca(tipoGasto, marca) {
-  if (marca === 'dentalmix') return TIPOS_GASTO.includes(tipoGasto);
+// El tipo de gasto se escribe libremente (no hay catalogo fijo).
+function tipoGastoValidoParaMarca(tipoGasto) {
   return typeof tipoGasto === 'string' && tipoGasto.trim().length > 0;
 }
 
