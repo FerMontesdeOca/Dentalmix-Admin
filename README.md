@@ -97,5 +97,5 @@ Railway permite correr esta app con almacenamiento persistente para la base de d
 4. En "Variables", agrega las mismas variables del archivo `.env` (`GMAIL_USER`, `GMAIL_APP_PASSWORD`, `NOTIFY_EMAIL_TO`, `DIAS_AVISO_VENCIMIENTO`, y si usas WhatsApp: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `NOTIFY_WHATSAPP_TO`, `TWILIO_WHATSAPP_CONTENT_SID`).
 5. En "Settings" agrega un **Volume** montado en la ruta `/app/data` para que la base de datos no se borre en cada despliegue.
 6. Railway detecta automaticamente que es una app de Node y ejecuta `npm start`. Al terminar te da una URL publica (algo como `tuapp.up.railway.app`) que puedes compartir con tu equipo.
-7. Una vez publicada, entra a la terminal de Railway (o corre el script localmente contra la base de datos remota) y ejecuta `npm run crear-usuario` para crear tu primer administrador ahi tambien.
+7. Una vez publicada, agrega la variable `SETUP_TOKEN` (una clave larga que tu inventes) y abre `https://tu-dominio/setup.html`: escribe esa clave y los datos de tu primer administrador. Esta pagina deja de funcionar en cuanto existe un usuario; los demas se crean desde la seccion Usuarios.
 
