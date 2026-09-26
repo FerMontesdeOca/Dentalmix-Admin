@@ -28,3 +28,14 @@ form.addEventListener('submit', async (e) => {
 
   window.location.href = siguientePagina();
 });
+
+// Mientras la pagina no tenga usuarios, se ofrece crear el primer administrador.
+fetch('/api/setup-disponible')
+  .then((res) => res.json())
+  .then(({ disponible }) => {
+    if (disponible) document.getElementById('link-setup').hidden = false;
+  })
+  .catch(() => {});
+
+// Si alguien llega aqui con "setup.html" en la direccion, se le manda a esa pagina.
+if (siguientePagina().includes('setup.html')) window.location.href = 'setup.html';

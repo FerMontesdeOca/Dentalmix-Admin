@@ -559,3 +559,9 @@ tr.pagada td { color: var(--verde); text-decoration: line-through; opacity: 0.7;
   border-color: rgba(224, 67, 60, 0.3);
   color: var(--rojo);
 }
+
+#link-setup:not([hidden]) {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+}

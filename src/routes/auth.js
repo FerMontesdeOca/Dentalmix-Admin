@@ -74,6 +74,13 @@ router.get('/me', (req, res) => {
 
 // Crea el primer administrador en un servidor recien publicado, sin necesitar acceso por terminal.
 // Se autodesactiva en cuanto ya existe al menos un usuario.
+// Le dice a la pagina de login si todavia no hay usuarios, para mostrar el
+// boton de "Crear primer administrador" (solo mientras no exista ninguno).
+router.get('/setup-disponible', (req, res) => {
+  const totalUsuarios = db.prepare('SELECT COUNT(*) AS total FROM users').get().total;
+  res.json({ disponible: totalUsuarios === 0 });
+});
+
 router.post('/setup-admin', (req, res) => {
   const totalUsuarios = db.prepare('SELECT COUNT(*) AS total FROM users').get().total;
   if (totalUsuarios > 0) {
