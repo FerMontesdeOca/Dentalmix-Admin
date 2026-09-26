@@ -8,7 +8,6 @@ const mensajeVencimiento = document.getElementById('mensaje-vencimiento');
 
 const fmtMoneda = (n) => Number(n).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
 const selectSucursal = document.getElementById('sucursal');
-const selectTipoGasto = document.getElementById('tipo_gasto');
 const esDividida = document.getElementById('es-dividida');
 const sucursalWrap = document.getElementById('sucursal-wrap');
 const modoDivisionWrap = document.getElementById('modo-division-wrap');
@@ -31,10 +30,9 @@ function diasParaVencer(fechaVencimiento) {
 
 async function cargarConfig() {
   const res = await fetch('/api/config');
-  const { sucursales, tiposGasto } = await res.json();
+  const { sucursales } = await res.json();
   sucursalesDisponibles = sucursales;
   selectSucursal.innerHTML = sucursales.map((s) => `<option value="${s}">${s}</option>`).join('');
-  document.getElementById('tipos-gasto-usados').innerHTML = tiposGasto.map((t) => `<option value="${escapeHtml(t)}"></option>`).join('');
   renderSucursalesDivision();
 }
 
@@ -165,7 +163,6 @@ function renderTabla(cuentas) {
     tr.innerHTML = `
       <td>${escapeHtml(c.proveedor)}</td>
       <td>${escapeHtml(c.concepto)}</td>
-      <td>${escapeHtml(c.tipo_gasto || '-')}</td>
       <td>${escapeHtml(c.fecha_emision)}</td>
       <td>${escapeHtml(c.fecha_vencimiento)}${porVencer ? ' ⚠️' : ''}</td>
       <td>${fmtMoneda(c.monto)}</td>
@@ -219,7 +216,6 @@ function cargarEnFormulario(c) {
     if (c.sucursal) selectSucursal.value = c.sucursal;
   }
   actualizarModoDivision();
-  selectTipoGasto.value = c.tipo_gasto || '';
   document.getElementById('monto').value = c.monto;
   document.getElementById('fecha_emision').value = c.fecha_emision;
   document.getElementById('fecha_vencimiento').value = c.fecha_vencimiento;
@@ -263,7 +259,6 @@ form.addEventListener('submit', async (e) => {
     proveedor: document.getElementById('proveedor').value.trim(),
     concepto: document.getElementById('concepto').value.trim(),
     sucursal: selectSucursal.value,
-    tipo_gasto: selectTipoGasto.value.trim(),
     monto: document.getElementById('monto').value,
     fecha_emision: document.getElementById('fecha_emision').value,
     fecha_vencimiento: document.getElementById('fecha_vencimiento').value,
@@ -313,35 +308,6 @@ form.addEventListener('submit', async (e) => {
   cargarCuentas();
   cargarConfig();
 });
-
-async function probarWhatsApp(boton) {
-  if (!confirm('Se enviara un WhatsApp de prueba a los numeros configurados. ¿Continuar?')) return;
-  boton.disabled = true;
-  boton.textContent = 'Enviando...';
-  try {
-    const res = await fetch('/api/cuentas/probar-whatsapp', { method: 'POST' });
-    const data = await res.json();
-    if (!res.ok) {
-      alert(data.error || 'Ocurrio un error al probar WhatsApp.');
-    } else if (!data.configurado) {
-      alert(`WhatsApp no esta configurado en el servidor. Faltan estas variables: ${data.faltan.join(', ')}`);
-    } else {
-      const lineas = data.resultados.map((r) =>
-        r.ok ? `✅ ${r.numero}: enviado (${r.estado || 'en cola'})` : `❌ ${r.numero}: ${r.error}${r.codigo ? ` (codigo ${r.codigo})` : ''}`
-      );
-      const plantilla = data.usaPlantilla ? 'Usando plantilla aprobada.' : 'Sin plantilla (TWILIO_WHATSAPP_CONTENT_SID no configurado).';
-      alert(`Resultado de la prueba:\n\n${lineas.join('\n')}\n\n${plantilla}`);
-    }
-  } catch {
-    alert('No se pudo contactar al servidor.');
-  } finally {
-    boton.disabled = false;
-    boton.textContent = 'Probar WhatsApp';
-  }
-}
-
-const probarWhatsAppBtn = document.getElementById('probar-whatsapp');
-if (probarWhatsAppBtn) probarWhatsAppBtn.addEventListener('click', () => probarWhatsApp(probarWhatsAppBtn));
 
 cancelEditBtn.addEventListener('click', limpiarFormulario);
 filtroPendientes.addEventListener('change', cargarCuentas);

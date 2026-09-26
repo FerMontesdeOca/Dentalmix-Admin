@@ -53,15 +53,6 @@
             <span id="sucursales-compartido-label">Clinicas que comparten el gasto</span>
             <div id="sucursales-compartido" class="checkbox-grid"></div>
           </label>
-          <label id="tipo-gasto-select-wrap">
-            Tipo de gasto
-            <select id="tipo_gasto" required></select>
-          </label>
-          <label id="tipo-gasto-texto-wrap" hidden>
-            Tipo de gasto
-            <input type="text" id="tipo_gasto_texto" list="tipos-gasto-usados" placeholder="Escribe el tipo de gasto" />
-            <datalist id="tipos-gasto-usados"></datalist>
-          </label>
           <label>
             Concepto
             <input type="text" id="concepto" required />
@@ -108,7 +99,6 @@
         <table id="tabla-gastos">
           <thead>
             <tr>
-              <th>Tipo de gasto</th>
               <th>Concepto</th>
               <th>Fecha</th>
               <th>Monto</th>

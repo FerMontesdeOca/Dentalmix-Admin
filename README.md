@@ -2,14 +2,14 @@
 
 App web de administracion de Dentalmix (deposito dental). Es una copia de la app de Dazujo adaptada a un solo negocio: no hay sucursales ni selector de marca.
 
-- **Cuentas por Pagar**: proveedor, concepto, tipo de gasto, fechas de emision y vencimiento, monto, cuentas fijas mensuales. Avisa por correo y por WhatsApp cuando una factura esta por vencer.
-- **Gastos**: tipo de gasto, concepto, fecha, monto y foto del comprobante.
+- **Cuentas por Pagar**: proveedor, concepto, fechas de emision y vencimiento, monto, cuentas fijas mensuales. Avisa por correo y por WhatsApp cuando una factura esta por vencer.
+- **Gastos**: concepto, fecha, monto y foto del comprobante.
 - **Cierre de Mes**: ingreso mensual, gasto, utilidad y margen, tendencia, comparacion mes vs mes y alertas de gasto.
 - **Proyeccion Mensual**: promedio de ingreso, gasto y utilidad por rango de meses (con meta mensual de 240,000).
 
 Todas las secciones se pueden exportar a CSV o Excel. El diseño se adapta a celular y tablet.
 
-El tipo de gasto se escribe a mano; al escribir, la pagina sugiere los tipos que ya se han usado. La meta mensual de ingreso (240,000 = 60,000 por semana) esta en `METAS_MENSUALES` de `src/constants.js`.
+Los gastos no se clasifican por tipo. La meta mensual de ingreso (240,000 = 60,000 por semana) esta en `METAS_MENSUALES` de `src/constants.js`.
 
 ## 1. Requisitos
 
@@ -79,7 +79,6 @@ Ademas del correo, la app puede mandar un WhatsApp automatico 7 dias, 3 dias y 1
 
 La revision corre a las 8:00 am hora de Mexico (se puede cambiar con `ZONA_HORARIA`) y tambien al arrancar el servidor. Si una cuenta se registra con menos de 7 dias de anticipacion, o un dia no corrio la revision, se manda el aviso que corresponda en cuanto se detecta. Si cambias la fecha de vencimiento de una cuenta, sus avisos se vuelven a programar.
 
-Para revisar que todo este bien configurado, un administrador puede usar el boton **"Probar WhatsApp"** en Cuentas por Pagar: manda un mensaje de prueba y dice por cada numero si llego o por que Twilio lo rechazo.
 
 Si estas variables no estan configuradas, la app simplemente omite el envio de WhatsApp (sin afectar el resto de la app ni el aviso por correo).
 

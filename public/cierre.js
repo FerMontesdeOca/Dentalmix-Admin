@@ -225,29 +225,6 @@ async function eliminarIngreso(id) {
   renderTodo();
 }
 
-function tipoPrincipalDeIncremento(sucursal, mes, previo) {
-  const porTipoActual = {};
-  const porTipoPrevio = {};
-
-  GASTOS.filter((g) => g.marca === marcaActual() && g.sucursal === sucursal && g.fecha.slice(0, 7) === mes).forEach((g) => {
-    porTipoActual[g.tipo_gasto] = (porTipoActual[g.tipo_gasto] || 0) + g.monto;
-  });
-  GASTOS.filter((g) => g.marca === marcaActual() && g.sucursal === sucursal && g.fecha.slice(0, 7) === previo).forEach((g) => {
-    porTipoPrevio[g.tipo_gasto] = (porTipoPrevio[g.tipo_gasto] || 0) + g.monto;
-  });
-
-  let mejorTipo = null;
-  let mejorIncremento = 0;
-  Object.keys(porTipoActual).forEach((tipo) => {
-    const incremento = porTipoActual[tipo] - (porTipoPrevio[tipo] || 0);
-    if (incremento > mejorIncremento) {
-      mejorIncremento = incremento;
-      mejorTipo = tipo;
-    }
-  });
-
-  return mejorTipo;
-}
 
 function renderAlertas(mes) {
   const previo = mesAnterior(mes);
@@ -264,7 +241,7 @@ function renderAlertas(mes) {
     if (anterior > 0) {
       const variacion = (actual - anterior) / anterior;
       if (variacion >= 0.2 && actual - anterior >= 500) {
-        alertas.push({ sucursal: s, actual, anterior, variacion, principal: tipoPrincipalDeIncremento(s, mes, previo) });
+        alertas.push({ sucursal: s, actual, anterior, variacion, principal: null }); // Dentalmix no clasifica gastos por tipo
       }
     } else if (actual >= 1000) {
       alertas.push({ sucursal: s, actual, anterior: 0, variacion: null, principal: null });

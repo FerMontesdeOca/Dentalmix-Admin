@@ -9,10 +9,6 @@ const filtroAnio = document.getElementById('filtro-anio');
 const exportCsvLink = document.getElementById('export-csv');
 const exportXlsxLink = document.getElementById('export-xlsx');
 const selectSucursal = document.getElementById('sucursal');
-const selectTipoGasto = document.getElementById('tipo_gasto');
-const tipoGastoSelectWrap = document.getElementById('tipo-gasto-select-wrap');
-const tipoGastoTextoWrap = document.getElementById('tipo-gasto-texto-wrap');
-const tipoGastoTexto = document.getElementById('tipo_gasto_texto');
 const esCompartido = document.getElementById('es-compartido');
 const compartidoToggleWrap = document.getElementById('compartido-toggle-wrap');
 const sucursalWrap = document.getElementById('sucursal-wrap');
@@ -56,11 +52,10 @@ function llenarFiltroMesAnio() {
 
 async function cargarConfig() {
   const res = await fetch('/api/config');
-  const { sucursales, tiposGasto, tomoxSucursales: tomoxDeConfig } = await res.json();
+  const { sucursales, tomoxSucursales: tomoxDeConfig } = await res.json();
 
   sucursalesTodas = sucursales;
   tomoxSucursales = tomoxDeConfig;
-  document.getElementById('tipos-gasto-usados').innerHTML = tiposGasto.map((t) => `<option value="${escapeHtml(t)}"></option>`).join('');
   actualizarUIporMarca();
 }
 
@@ -71,19 +66,10 @@ function sucursalesParaMarca() {
   return sucursalesTodas;
 }
 
-// Dentalmix escribe el tipo de gasto a mano (se sugieren los ya usados).
-function tipoGastoLibre() {
-  return true;
-}
-
-function valorTipoGasto() {
-  return tipoGastoLibre() ? tipoGastoTexto.value.trim() : selectTipoGasto.value;
-}
 
 function actualizarUIporMarca() {
   sucursalesDisponibles = sucursalesParaMarca();
   const esLaboratorio = marcaActual() === 'laboratorio';
-  const libre = tipoGastoLibre();
 
   selectSucursal.innerHTML = sucursalesDisponibles.map((s) => `<option value="${s}">${s}</option>`).join('');
   filtroSucursal.innerHTML =
@@ -93,10 +79,6 @@ function actualizarUIporMarca() {
   if (esLaboratorio) esCompartido.checked = false;
   compartidoToggleWrap.hidden = true;
 
-  tipoGastoSelectWrap.hidden = libre;
-  tipoGastoTextoWrap.hidden = !libre;
-  selectTipoGasto.required = !libre;
-  tipoGastoTexto.required = libre;
 
   renderSucursalesCompartido();
   actualizarModoCompartido();
@@ -236,7 +218,6 @@ function renderTabla() {
   filas.forEach((g) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${escapeHtml(g.tipo_gasto)}</td>
       <td>${escapeHtml(g.concepto)}</td>
       <td>${escapeHtml(g.fecha)}</td>
       <td>${fmtMoneda(g.monto)}</td>
@@ -269,11 +250,6 @@ function cargarEnFormulario(g) {
   compartidoToggleWrap.hidden = true;
   actualizarModoCompartido();
   selectSucursal.value = g.sucursal;
-  if (tipoGastoLibre()) {
-    tipoGastoTexto.value = g.tipo_gasto;
-  } else {
-    selectTipoGasto.value = g.tipo_gasto;
-  }
   document.getElementById('concepto').value = g.concepto;
   document.getElementById('fecha').value = g.fecha;
   document.getElementById('monto').value = g.monto;
@@ -315,7 +291,6 @@ form.addEventListener('submit', async (e) => {
   let url = id ? `/api/gastos/${id}` : '/api/gastos';
   const method = id ? 'PUT' : 'POST';
   const datos = new FormData();
-  datos.set('tipo_gasto', valorTipoGasto());
   datos.set('concepto', document.getElementById('concepto').value.trim());
   datos.set('fecha', document.getElementById('fecha').value);
   datos.set('monto', document.getElementById('monto').value);
@@ -359,14 +334,8 @@ form.addEventListener('submit', async (e) => {
 
   limpiarFormulario();
   cargarGastos();
-  refrescarSugerenciasTipoGasto();
 });
 
-async function refrescarSugerenciasTipoGasto() {
-  const res = await fetch('/api/config');
-  const { tiposGasto } = await res.json();
-  document.getElementById('tipos-gasto-usados').innerHTML = tiposGasto.map((t) => `<option value="${escapeHtml(t)}"></option>`).join('');
-}
 
 cancelEditBtn.addEventListener('click', limpiarFormulario);
 filtroSucursal.addEventListener('change', () => {

@@ -37,7 +37,6 @@ function borrarComprobante(nombreArchivo) {
 }
 
 const COLUMNAS = [
-  { header: 'Tipo de Gasto', key: 'tipo_gasto', width: 25 },
   { header: 'Concepto', key: 'concepto', width: 25 },
   { header: 'Fecha', key: 'fecha', width: 15 },
   { header: 'Monto', key: 'monto', width: 15 },
@@ -62,20 +61,18 @@ function normalizarMarcaYSucursal(body) {
   return marca;
 }
 
-// El tipo de gasto se escribe libremente (no hay catalogo fijo).
-function tipoGastoValidoParaMarca(tipoGasto) {
-  return typeof tipoGasto === 'string' && tipoGasto.trim().length > 0;
-}
+// Dentalmix no clasifica sus gastos por tipo: la columna tipo_gasto de la
+// base de datos se conserva pero siempre se guarda vacia.
+const SIN_TIPO = '';
 
 function validarGasto(body, marca) {
-  const requeridos = ['sucursal', 'tipo_gasto', 'concepto', 'fecha', 'monto'];
+  const requeridos = ['sucursal', 'concepto', 'fecha', 'monto'];
   for (const campo of requeridos) {
     if (body[campo] === undefined || body[campo] === null || body[campo] === '') {
       return `Falta el campo: ${campo}`;
     }
   }
   if (!sucursalValidaParaMarca(body.sucursal, marca)) return 'Sucursal invalida';
-  if (!tipoGastoValidoParaMarca(body.tipo_gasto, marca)) return 'Tipo de gasto invalido';
   if (Number.isNaN(Number(body.monto))) return 'El monto debe ser un numero';
   return null;
 }
@@ -104,20 +101,20 @@ router.post('/', upload.single('comprobante'), manejarErrorMulter, (req, res) =>
     return res.status(400).json({ error });
   }
 
-  const { sucursal, tipo_gasto, concepto, fecha, monto } = req.body;
+  const { sucursal, concepto, fecha, monto } = req.body;
   const info = db
     .prepare(
       `INSERT INTO gastos (sucursal, tipo_gasto, concepto, fecha, monto, comprobante, marca)
        VALUES (?, ?, ?, ?, ?, ?, ?)`
     )
-    .run(sucursal, tipo_gasto, concepto, fecha, Number(monto), req.file?.filename || null, marca);
+    .run(sucursal, SIN_TIPO, concepto, fecha, Number(monto), req.file?.filename || null, marca);
 
   const nuevo = db.prepare('SELECT * FROM gastos WHERE id = ?').get(info.lastInsertRowid);
   res.status(201).json(nuevo);
 });
 
 router.post('/compartido', upload.single('comprobante'), manejarErrorMulter, (req, res) => {
-  const { tipo_gasto, concepto, fecha } = req.body;
+  const { concepto, fecha } = req.body;
   const modo = req.body.modo || 'igual';
   const marca = MARCAS.includes(req.body.marca) ? req.body.marca : 'dentalmix';
 
@@ -139,7 +136,6 @@ router.post('/compartido', upload.single('comprobante'), manejarErrorMulter, (re
 
   const division = calcularDivision(modo, partes, req.body.monto, (s) => sucursalValidaParaMarca(s, marca));
   if (division.error) return fallar(division.error);
-  if (!tipoGastoValidoParaMarca(tipo_gasto, marca)) return fallar('Tipo de gasto invalido');
   if (!concepto) return fallar('Falta el campo: concepto');
   if (!fecha) return fallar('Falta el campo: fecha');
 
@@ -151,7 +147,7 @@ router.post('/compartido', upload.single('comprobante'), manejarErrorMulter, (re
   );
 
   const creados = filasMonto.map((f) => {
-    const info = insert.run(f.sucursal, tipo_gasto, concepto, fecha, f.monto, grupoId, montoTotal, req.file?.filename || null, marca);
+    const info = insert.run(f.sucursal, SIN_TIPO, concepto, fecha, f.monto, grupoId, montoTotal, req.file?.filename || null, marca);
     return db.prepare('SELECT * FROM gastos WHERE id = ?').get(info.lastInsertRowid);
   });
 
@@ -166,7 +162,6 @@ router.put('/:id', upload.single('comprobante'), manejarErrorMulter, (req, res) 
   }
 
   const sucursal = req.body.sucursal ?? existente.sucursal;
-  const tipo_gasto = req.body.tipo_gasto ?? existente.tipo_gasto;
   const concepto = req.body.concepto ?? existente.concepto;
   const fecha = req.body.fecha ?? existente.fecha;
   const monto = req.body.monto !== undefined ? Number(req.body.monto) : existente.monto;
@@ -174,9 +169,9 @@ router.put('/:id', upload.single('comprobante'), manejarErrorMulter, (req, res) 
 
   db.prepare(
     `UPDATE gastos
-     SET sucursal = ?, tipo_gasto = ?, concepto = ?, fecha = ?, monto = ?, comprobante = ?
+     SET sucursal = ?, concepto = ?, fecha = ?, monto = ?, comprobante = ?
      WHERE id = ?`
-  ).run(sucursal, tipo_gasto, concepto, fecha, monto, comprobante, req.params.id);
+  ).run(sucursal, concepto, fecha, monto, comprobante, req.params.id);
 
   if (req.file && existente.comprobante) borrarComprobante(existente.comprobante);
 

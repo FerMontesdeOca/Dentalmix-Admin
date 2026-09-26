@@ -3,8 +3,7 @@
 const SUCURSAL_UNICA = 'Dentalmix';
 const SUCURSALES_INICIALES = [SUCURSAL_UNICA];
 
-// Dentalmix no usa un catalogo fijo: el tipo de gasto se escribe a mano (la
-// pagina sugiere los que ya se han usado antes).
+// Dentalmix no clasifica sus gastos por tipo.
 const TIPOS_GASTO = [];
 
 // Se conserva la estructura de "marcas" de la app original con una sola marca.

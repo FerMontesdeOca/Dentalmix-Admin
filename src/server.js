@@ -11,7 +11,6 @@ const authRouter = require('./routes/auth');
 const usuariosRouter = require('./routes/usuarios');
 const { METAS_MENSUALES, TOMOX_SUCURSALES, SUCURSAL_LABORATORIO } = require('./constants');
 const sucursales = require('./sucursales');
-const db = require('./db');
 const { requireAuth, requireAdmin } = require('./auth');
 const { iniciarCron } = require('./cron');
 
@@ -44,15 +43,6 @@ app.use('/api', authRouter);
 app.get('/api/config', requireAuth, (req, res) => {
   res.json({
     sucursales: sucursales.listarActivas(),
-    // Tipos de gasto ya usados, para sugerirlos al escribir (el tipo es libre).
-    tiposGasto: db
-      .prepare(
-        `SELECT tipo_gasto FROM gastos WHERE tipo_gasto <> ''
-         UNION SELECT tipo_gasto FROM cuentas_por_pagar WHERE tipo_gasto IS NOT NULL AND tipo_gasto <> ''
-         ORDER BY 1`
-      )
-      .all()
-      .map((r) => r.tipo_gasto),
     metasMensuales: METAS_MENSUALES,
     tomoxSucursales: TOMOX_SUCURSALES,
     sucursalLaboratorio: SUCURSAL_LABORATORIO,

@@ -100,33 +100,4 @@ async function enviarAvisoVencimientoWhatsApp(cuenta, dias) {
   return enviarWhatsApp(texto, variables);
 }
 
-// Twilio acepta el mensaje al instante y lo entrega (o lo rechaza) unos
-// segundos despues, asi que para la prueba se espera y se consulta el estado real.
-async function probarWhatsApp() {
-  const faltan = configuracionFaltante();
-  if (faltan.length) return { configurado: false, faltan, resultados: [] };
-
-  const texto = '✅ Prueba de avisos de Dentalmix: si te llego este mensaje, los recordatorios por WhatsApp funcionan.';
-  const variables = { 1: 'PRUEBA', 2: 'Mensaje de prueba', 3: '$0.00', 4: 'hoy', 5: new Date().toISOString().slice(0, 10) };
-  const resultados = await enviarWhatsApp(texto, variables);
-
-  await new Promise((r) => setTimeout(r, 6000));
-  const client = getClient();
-  for (const r of resultados) {
-    if (!r.ok) continue;
-    try {
-      const msg = await client.messages(r.sid).fetch();
-      r.estado = msg.status;
-      if (msg.errorCode) {
-        r.ok = false;
-        r.codigo = msg.errorCode;
-        r.error = explicarError(msg.errorCode, msg.errorMessage);
-      }
-    } catch (err) {
-      r.estado = 'desconocido';
-    }
-  }
-  return { configurado: true, usaPlantilla: !!process.env.TWILIO_WHATSAPP_CONTENT_SID, resultados };
-}
-
-module.exports = { enviarWhatsApp, enviarAvisoVencimientoWhatsApp, probarWhatsApp };
+module.exports = { enviarWhatsApp, enviarAvisoVencimientoWhatsApp };

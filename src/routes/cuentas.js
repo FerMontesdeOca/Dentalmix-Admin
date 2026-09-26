@@ -1,8 +1,6 @@
 const express = require('express');
 const db = require('../db');
 const { revisarVencimientos, revisarAvisosWhatsApp } = require('../cron');
-const { probarWhatsApp } = require('../whatsapp');
-const { requireAdmin } = require('../auth');
 const { enviarCSV, enviarXLSX } = require('../export');
 const sucursalesDb = require('../sucursales');
 const { calcularDivision, nuevoGrupoId } = require('../division');
@@ -12,7 +10,6 @@ const router = express.Router();
 const COLUMNAS = [
   { header: 'Proveedor', key: 'proveedor', width: 25 },
   { header: 'Concepto', key: 'concepto', width: 25 },
-  { header: 'Tipo de Gasto', key: 'tipo_gasto', width: 25 },
   { header: 'Fecha Emision', key: 'fecha_emision', width: 15 },
   { header: 'Fecha Vencimiento', key: 'fecha_vencimiento', width: 18 },
   { header: 'Monto', key: 'monto', width: 15 },
@@ -60,7 +57,7 @@ function prepararDivision(division, monto) {
 }
 
 function validarCuenta(body) {
-  const requeridos = ['proveedor', 'concepto', 'fecha_emision', 'fecha_vencimiento', 'tipo_gasto'];
+  const requeridos = ['proveedor', 'concepto', 'fecha_emision', 'fecha_vencimiento'];
   if (!body.division) requeridos.push('sucursal');
   if (!body.division || body.division.modo !== 'cantidad') requeridos.push('monto');
   for (const campo of requeridos) {
@@ -70,7 +67,6 @@ function validarCuenta(body) {
   }
   if (body.monto !== undefined && body.monto !== '' && Number.isNaN(Number(body.monto))) return 'El monto debe ser un numero';
   if (!body.division && !sucursalesDb.existeActiva(body.sucursal)) return 'Sucursal invalida';
-  if (typeof body.tipo_gasto !== 'string' || !body.tipo_gasto.trim()) return 'Tipo de gasto invalido';
   return null;
 }
 
@@ -150,7 +146,9 @@ router.post('/', (req, res) => {
   const error = validarCuenta(req.body);
   if (error) return res.status(400).json({ error });
 
-  const { proveedor, concepto, fecha_emision, fecha_vencimiento, tipo_gasto } = req.body;
+  const { proveedor, concepto, fecha_emision, fecha_vencimiento } = req.body;
+  // Dentalmix no clasifica por tipo de gasto; la columna se conserva vacia.
+  const tipo_gasto = '';
   const es_fijo = req.body.es_fijo ? 1 : 0;
 
   const preparada = prepararDivision(req.body.division, Number(req.body.monto));
@@ -180,7 +178,7 @@ router.put('/:id', (req, res) => {
   let monto = req.body.monto !== undefined && req.body.monto !== '' ? Number(req.body.monto) : existente.monto;
   let sucursal = req.body.sucursal ?? existente.sucursal;
   let division = existente.division;
-  const tipo_gasto = req.body.tipo_gasto ?? existente.tipo_gasto;
+  const tipo_gasto = existente.tipo_gasto || '';
   const es_fijo = req.body.es_fijo !== undefined ? (req.body.es_fijo ? 1 : 0) : existente.es_fijo;
   const pagadaNueva = req.body.pagada !== undefined ? (req.body.pagada ? 1 : 0) : existente.pagada;
 
@@ -195,9 +193,6 @@ router.put('/:id', (req, res) => {
   if (!division && (req.body.sucursal !== undefined || existente.division) && !sucursalesDb.existeActiva(sucursal)) {
     return res.status(400).json({ error: 'Sucursal invalida' });
   }
-  if (req.body.tipo_gasto !== undefined && (typeof tipo_gasto !== 'string' || !tipo_gasto.trim())) {
-    return res.status(400).json({ error: 'Tipo de gasto invalido' });
-  }
   if (Number.isNaN(monto)) {
     return res.status(400).json({ error: 'El monto debe ser un numero' });
   }
@@ -208,8 +203,8 @@ router.put('/:id', (req, res) => {
 
   if (!existente.pagada && pagadaNueva) {
     // Se marca como pagada: se registra automaticamente como gasto.
-    if (!sucursal || !tipo_gasto) {
-      return res.status(400).json({ error: 'Para marcar como pagada, la cuenta necesita sucursal y tipo de gasto' });
+    if (!sucursal) {
+      return res.status(400).json({ error: 'Para marcar como pagada, la cuenta necesita sucursal' });
     }
     ({ gastoId, grupoId } = registrarGastoDeCuenta(cuentaActualizada));
     if (es_fijo) crearSiguienteFija(cuentaActualizada);
@@ -251,14 +246,6 @@ router.delete('/:id', (req, res) => {
   if (info.changes === 0) return res.status(404).json({ error: 'No encontrada' });
   if (existente) eliminarGastosDeCuenta(existente.gasto_id, existente.gasto_grupo_id);
   res.status(204).end();
-});
-
-router.post('/probar-whatsapp', requireAdmin, async (req, res) => {
-  try {
-    res.json(await probarWhatsApp());
-  } catch (err) {
-    res.status(500).json({ error: err.message || 'Error al probar WhatsApp' });
-  }
 });
 
 router.post('/revisar-vencimientos', async (req, res) => {
