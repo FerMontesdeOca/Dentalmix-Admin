@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cierre de Mes | Dentalmix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css?family=Poppins:300,400,600,700" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <img src="assets/logo_dentalmix.png" alt="Dentalmix" class="logo" />
+      <nav class="nav">
+        <a href="index.html">Cuentas por Pagar</a>
+        <a href="gastos.html">Gastos</a>
+        <a href="cierre.html" class="active">Cierre de Mes</a>
+        <a href="proyeccion.html">Proyeccion Mensual</a>
+        <a href="usuarios.html" data-admin-only>Usuarios</a>
+      </nav>
+      <div class="user-box">
+        <span data-user-name></span>
+        <button type="button" id="logout-btn" class="secondary small">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="card">
+      <div class="toolbar">
+        <h2>Tablero del cierre</h2>
+        <div class="toolbar-actions">
+          <label class="checkbox-label">
+            Mes de cierre
+            <input type="month" id="mes-cierre" />
+          </label>
+          <a href="/api/cierre/export/csv" id="tablero-export-csv" class="button small">Exportar CSV</a>
+          <button type="button" id="tablero-export-xlsx" class="small">Exportar Excel</button>
+        </div>
+      </div>
+
+      <div class="kpi-row" id="kpi-row"></div>
+
+      <div class="table-wrapper" hidden>
+        <table id="tabla-clinicas">
+          <thead>
+            <tr>
+              <th>Clinica</th>
+              <th>Ingreso</th>
+              <th>Gasto</th>
+              <th>Utilidad</th>
+              <th>Margen</th>
+            </tr>
+          </thead>
+          <tbody id="clinicas-body"></tbody>
+        </table>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-box">
+          <h3>Ingreso vs gasto</h3>
+          <canvas id="chart-ingreso-gasto"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3>Utilidad</h3>
+          <canvas id="chart-utilidad"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="toolbar">
+        <h2>Tendencia</h2>
+        <div class="toolbar-actions">
+          <select id="tendencia-sucursal" hidden>
+            <option value="">Todas las clinicas</option>
+          </select>
+          <label class="checkbox-label">
+            Desde
+            <input type="month" id="tendencia-desde" />
+          </label>
+          <label class="checkbox-label">
+            Hasta
+            <input type="month" id="tendencia-hasta" />
+          </label>
+        </div>
+      </div>
+      <div class="chart-box">
+        <canvas id="chart-tendencia"></canvas>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Comparar</h2>
+      <div class="comparar-modo-row" id="comparar-modo-row" hidden>
+        <label class="checkbox-label" id="modo-clinicas-wrap">
+          <input type="radio" name="modo-comparar" id="modo-clinicas" />
+          Clinica vs clinica
+        </label>
+        <label class="checkbox-label">
+          <input type="radio" name="modo-comparar" id="modo-meses" checked />
+          Mes vs mes
+        </label>
+      </div>
+
+      <div id="comparar-clinicas" class="grid" hidden>
+        <label>
+          Mes
+          <input type="month" id="cmp-clin-mes" />
+        </label>
+        <label>
+          Clinica A
+          <select id="cmp-clin-a"></select>
+        </label>
+        <label>
+          Clinica B
+          <select id="cmp-clin-b"></select>
+        </label>
+      </div>
+
+      <div id="comparar-meses" class="grid">
+        <label hidden>
+          Clinica
+          <select id="cmp-mes-sucursal">
+            <option value="">Todas las clinicas</option>
+          </select>
+        </label>
+        <label>
+          Mes A
+          <input type="month" id="cmp-mes-a" />
+        </label>
+        <label>
+          Mes B
+          <input type="month" id="cmp-mes-b" />
+        </label>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="tabla-comparar">
+          <thead>
+            <tr id="comparar-encabezado"></tr>
+          </thead>
+          <tbody id="comparar-body"></tbody>
+        </table>
+      </div>
+
+      <div class="chart-box">
+        <canvas id="chart-comparar"></canvas>
+      </div>
+    </section>
+
+    <section class="card" id="seccion-ingreso">
+      <h2>Registrar ingreso mensual</h2>
+      <form id="ingreso-form">
+        <div class="grid">
+          <label hidden>
+            Clinica
+            <select id="ing-sucursal" required></select>
+          </label>
+          <label>
+            Mes
+            <input type="month" id="ing-mes" required />
+          </label>
+          <label>
+            Ingreso
+            <input type="number" id="ing-monto" step="0.01" min="0" required />
+          </label>
+        </div>
+        <div class="form-actions">
+          <button type="submit">Guardar ingreso</button>
+        </div>
+      </form>
+      <div class="table-wrapper">
+        <table id="tabla-ingresos">
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th>Ingreso</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="ingresos-body"></tbody>
+        </table>
+      </div>
+      <div class="paginacion">
+        <button type="button" id="ing-pagina-anterior" class="small secondary">‹ Anterior</button>
+        <span id="ing-pagina-info"></span>
+        <button type="button" id="ing-pagina-siguiente" class="small secondary">Siguiente ›</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Alertas de gastos</h2>
+      <p class="hint">Compara el gasto del mes de cierre contra el mes anterior.</p>
+      <div id="alertas-lista"></div>
+    </section>
+  </main>
+
+  <script src="auth.js"></script>
+  <script src="marca.js"></script>
+  <script src="mesSelector.js"></script>
+  <script src="cierre.js"></script>
+</body>
+</html>
